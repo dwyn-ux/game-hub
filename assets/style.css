@@ -7,3 +7,4 @@
 [data-theme=light] .nav a,[data-theme=light] .btn{background:var(--panel2)}
 [data-theme=light] .brand{text-shadow:none}
 [data-theme=light] .field input,[data-theme=light] .field textarea,[data-theme=light] .field select{background:#fff;color:var(--text)}
+.theme-float{position:fixed;top:12px;right:12px;z-index:50;width:auto}
