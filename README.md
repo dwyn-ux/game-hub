@@ -45,6 +45,13 @@ game.zip
 ```
 `index.html` wajib berada di root ZIP.
 
+## Troubleshooting 404 pada game yang sudah publish
+- Pastikan **mod_rewrite AKTIF** — game diakses lewat `/play/<slug>/index.html` (ditangani `.htaccess`), bukan file fisik.
+- Kalau game published & file ada di `storage/games/.../index.html` tapi tetap 404, cek **Error Log** hosting → cari baris `[game-hub] published game missing file: ...`. Ini kasih tau persis path-nya (`exists=0` = gak ketemu, atau `exists=1` = jalan tapi path diblokir).
+- Bisa juga **storage/games/ tidak dibaca PHP** (izin folder 750/750, atau `open_basedir` php.ini memblokir path).
+- **Folder game tiba-tiba hilang** dari disk → kemungkinan anti-virus hosting (Imunify360/CloudLinux) mengkuarantin atau disk penuh; tambah exclusion di cPanel untuk folder `storage/`.
+- **Game ada di DB & published tapi game.php 404** ("Game tidak ditemukan.") → cek `SELECT ... FROM games WHERE ...`, atau teacher_id-nya mengarah ke teacher yang sudah terhapus (JOIN gagal).
+
 ## Batasan MVP
 - Game harus self-contained. CDN/API eksternal diblokir oleh CSP.
 - Belum ada leaderboard nilai siswa lintas perangkat.
