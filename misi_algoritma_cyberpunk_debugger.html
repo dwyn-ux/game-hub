@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Misi Algoritma // Cyberpunk Classroom</title>
+<style>
+:root{
+  --bg:#05070d;
+  --panel:#0b1020;
+  --panel2:#0f172a;
+  --cyan:#33f6ff;
+  --mag:#ff3bd4;
+  --lime:#9cff3b;
+  --yellow:#ffe66d;
+  --red:#ff5d73;
+  --text:#edf7ff;
+  --muted:#97a6ba;
+  --line:#1e2a42;
+  --glow:0 0 20px rgba(51,246,255,.22),0 0 36px rgba(255,59,212,.12);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  min-height:100vh;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  background:
+    radial-gradient(circle at 15% 10%,rgba(255,59,212,.12),transparent 26%),
+    radial-gradient(circle at 85% 12%,rgba(51,246,255,.12),transparent 24%),
+    linear-gradient(180deg,#03050a 0%,#070b13 42%,#05070d 100%);
+  color:var(--text);
+  overflow-x:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;
+  background-image:
+   linear-gradient(rgba(51,246,255,.08) 1px,transparent 1px),
+   linear-gradient(90deg,rgba(51,246,255,.08) 1px,transparent 1px);
+  background-size:28px 28px;
+  mask-image:linear-gradient(to bottom,rgba(0,0,0,.9),transparent 90%);
+}
+.wrap{max-width:1180px;margin:auto;padding:22px;position:relative;z-index:1}
+.topbar,.panel,.mission,.final{
+  background:linear-gradient(180deg,rgba(15,23,42,.94),rgba(7,12,24,.96));
+  border:1px solid rgba(51,246,255,.22);
+  box-shadow:var(--glow);
+  border-radius:18px;
+}
+.topbar{padding:22px;position:relative;overflow:hidden}
+.topbar::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),var(--mag),transparent)}
+.eyebrow{font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);font-weight:800}
+.title{font-size:clamp(1.8rem,4vw,3.6rem);margin:7px 0 8px;font-weight:900;line-height:1;letter-spacing:-.04em;text-shadow:0 0 18px rgba(51,246,255,.28)}
+.title .mag{color:var(--mag)}
+.subtitle{margin:0;color:var(--muted);max-width:820px;line-height:1.65}
+.hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:18px}
+.hudbox{border:1px solid var(--line);background:#080d18;border-radius:14px;padding:12px 14px;position:relative;overflow:hidden}
+.hudbox::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--cyan)}
+.hudlabel{font-size:.72rem;text-transform:uppercase;letter-spacing:.13em;color:var(--muted)}
+.hudval{font-size:1.4rem;font-weight:900;margin-top:4px;color:#fff}
+.progress{margin-top:14px;height:10px;border:1px solid #22314d;border-radius:999px;background:#03060b;overflow:hidden}
+.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--mag));box-shadow:0 0 18px rgba(51,246,255,.6);transition:width .35s ease}
+.grid{display:grid;grid-template-columns:300px 1fr;gap:18px;margin-top:18px}
+.panel{padding:16px;align-self:start;position:sticky;top:16px}
+.panel h2{font-size:1rem;margin:0 0 12px;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan)}
+.nav{display:grid;gap:9px}
+.nav button,.btn,.choice,.cardbtn{
+  border:1px solid #253455;
+  color:var(--text);
+  background:linear-gradient(180deg,#0f1729,#0a1020);
+  border-radius:12px;
+  padding:12px 14px;
+  font:inherit;
+  font-weight:800;
+  cursor:pointer;
+  transition:.18s ease;
+}
+.nav button{text-align:left;display:flex;gap:10px;align-items:center}
+.nav button:hover,.btn:hover,.choice:hover,.cardbtn:hover{transform:translateY(-1px);border-color:var(--cyan);box-shadow:0 0 18px rgba(51,246,255,.15)}
+.nav button.active{background:linear-gradient(90deg,rgba(51,246,255,.16),rgba(255,59,212,.12));border-color:var(--cyan);box-shadow:0 0 22px rgba(51,246,255,.14)}
+.badge{display:inline-flex;align-items:center;gap:6px;border:1px solid #2a3b5f;background:#07101a;border-radius:999px;padding:6px 10px;font-size:.75rem;color:var(--muted)}
+.mission{padding:20px;min-height:540px;position:relative;overflow:hidden}
+.mission::before{content:"MISSION NODE";position:absolute;right:18px;top:14px;font-size:.66rem;letter-spacing:.2em;color:#405171}
+.mission h3{font-size:1.45rem;margin:0 0 8px}
+.mission .desc{color:var(--muted);line-height:1.6;margin:0 0 16px}
+.hidden{display:none!important}
+.section{border:1px solid var(--line);background:rgba(5,9,18,.68);border-radius:14px;padding:15px}
+.section-title{font-size:.85rem;text-transform:uppercase;letter-spacing:.12em;color:var(--mag);font-weight:900;margin-bottom:10px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.choice{font-weight:700;text-align:left}
+.choice.disabled{opacity:.4;cursor:default}
+.target{min-height:160px;border:1px dashed #38507f;border-radius:12px;padding:10px;background:#050914}
+.step{padding:10px 12px;margin-bottom:8px;border:1px solid #2a3b5e;border-radius:10px;background:#0b1324;font-weight:700}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:linear-gradient(90deg,#0f3a48,#3a1238);border-color:var(--cyan);box-shadow:0 0 16px rgba(51,246,255,.12)}
+.btn.mag{border-color:var(--mag)}
+.btn.red{border-color:var(--red);color:#ffdbe2}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.feedback{margin-top:12px;border-radius:12px;padding:12px 14px;border:1px solid #263858;background:#08101e;color:#d7e5f4}
+.feedback.ok{border-color:#2d6d52;background:rgba(25,82,57,.18);color:#c9ffe3}
+.feedback.bad{border-color:#7d2b3a;background:rgba(102,26,42,.2);color:#ffd3dc}
+.student{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#09101d}
+.number-board,.search-board{display:flex;flex-wrap:wrap;gap:10px}
+.num,.search-card{min-width:60px;padding:14px 12px;border:1px solid #2f4268;border-radius:12px;background:#0a1324;color:#fff;font-weight:900;text-align:center;cursor:pointer;transition:.18s ease}
+.num:hover,.search-card:hover{border-color:var(--cyan);box-shadow:0 0 16px rgba(51,246,255,.16)}
+.num.selected{border-color:var(--mag);background:#241024;box-shadow:0 0 18px rgba(255,59,212,.16)}
+.search-card.off{opacity:.22}
+.search-card.mid{border-color:var(--yellow);box-shadow:0 0 18px rgba(255,230,109,.18)}
+.statline{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.statpill{padding:8px 10px;border:1px solid var(--line);border-radius:999px;background:#080e1a;color:var(--muted)}
+.stack{display:flex;flex-direction:column-reverse;gap:8px;min-height:170px;justify-content:flex-start}
+.queue{display:flex;gap:8px;flex-wrap:wrap;min-height:78px;align-items:center}
+.token{padding:10px 14px;border-radius:10px;border:1px solid #31527f;background:linear-gradient(180deg,#0d1f36,#0a1524);font-weight:900;text-align:center;box-shadow:inset 0 0 14px rgba(51,246,255,.05)}
+.codebox{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92rem;border:1px solid #21304d;background:#04070d;border-radius:12px;padding:14px;color:#c9f9ff;line-height:1.7;white-space:pre-wrap}
+.debug-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;margin-top:14px}
+.codepanel,.tracepanel{border:1px solid #21304d;background:#04070d;border-radius:12px;overflow:hidden}
+.debug-head{padding:9px 12px;border-bottom:1px solid #1b2841;font:800 .72rem ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.14em;color:var(--cyan);background:#07101a}
+.codeview{padding:8px 0;font:500 .88rem/1.65 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#b8c8dc;overflow:auto}
+.code-line{display:block;padding:2px 12px 2px 42px;position:relative;white-space:pre;min-height:1.65em;border-left:3px solid transparent}
+.code-line::before{content:attr(data-ln);position:absolute;left:10px;color:#42516a;width:22px;text-align:right}
+.code-line.active{color:#fff;background:linear-gradient(90deg,rgba(51,246,255,.17),rgba(255,59,212,.07));border-left-color:var(--cyan);text-shadow:0 0 10px rgba(51,246,255,.4)}
+.trace{padding:12px;min-height:140px;max-height:260px;overflow:auto;font:500 .84rem/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d6e5f4}
+.trace-row{padding:4px 0;border-bottom:1px dashed rgba(66,81,106,.28)}
+.trace-row:last-child{border-bottom:0}.trace-ok{color:var(--lime)}.trace-warn{color:var(--yellow)}.trace-bad{color:var(--red)}
+@media(max-width:900px){.debug-grid{grid-template-columns:1fr}}
+.final{padding:22px;margin-top:18px;text-align:center}
+.final h3{font-size:1.8rem;margin:0 0 8px;color:var(--lime)}
+.small{font-size:.88rem;color:var(--muted)}
+hr{border:none;border-top:1px solid var(--line);margin:16px 0}
+@media(max-width:900px){.grid{grid-template-columns:1fr}.panel{position:static}.nav{grid-template-columns:repeat(2,1fr)}.hud{grid-template-columns:repeat(2,1fr)}.two,.three{grid-template-columns:1fr}}
+@media(max-width:560px){.wrap{padding:12px}.nav{grid-template-columns:1fr}.hud{grid-template-columns:1fr 1fr}.actions .btn{width:100%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="eyebrow">EDU-NET // INFORMATIKA X // BAB 2</div>
+    <h1 class="title">MISI <span class="mag">ALGORITMA</span></h1>
+    <p class="subtitle">Game tugas interaktif berbasis praktik. Siswa tidak menjawab pertanyaan, tetapi harus menyusun algoritma, menjalankan percabangan, mengurutkan data, melakukan pencarian, serta memanipulasi stack dan queue.</p>
+    <div class="hud">
+      <div class="hudbox"><div class="hudlabel">Score</div><div class="hudval" id="score">0</div></div>
+      <div class="hudbox"><div class="hudlabel">Mission Clear</div><div class="hudval" id="missionStat">0/5</div></div>
+      <div class="hudbox"><div class="hudlabel">Status</div><div class="hudval" id="status">READY</div></div>
+      <div class="hudbox"><div class="hudlabel">Rank</div><div class="hudval" id="rank">ROOKIE</div></div>
+    </div>
+    <div class="progress"><div id="progress"></div></div>
+  </header>
+
+  <div class="grid">
+    <aside class="panel">
+      <h2>Mission Select</h2>
+      <div class="nav">
+        <button class="active" data-id="m1">01 // Susun Algoritma</button>
+        <button data-id="m2">02 // Percabangan</button>
+        <button data-id="m3">03 // Sorting Arena</button>
+        <button data-id="m4">04 // Search Race</button>
+        <button data-id="m5">05 // Stack & Queue</button>
+      </div>
+      <hr>
+      <div class="small">Setiap misi bernilai <b>20 poin</b>. Selesaikan semua node untuk mencapai rank tertinggi.</div>
+    </aside>
+
+    <main>
+      <section id="m1" class="mission">
+        <span class="badge">NODE 01 • ALGORITHM BUILDER</span>
+        <h3>Susun Prosedur Kantin</h3>
+        <p class="desc">Klik langkah-langkah di sisi kiri dalam urutan yang paling logis. Susunan akan dieksekusi sebagai algoritma.</p>
+        <div class="two">
+          <div class="section">
+            <div class="section-title">Available Steps</div>
+            <div id="algoChoices"></div>
+          </div>
+          <div class="section">
+            <div class="section-title">Execution Sequence</div>
+            <div id="algoTarget" class="target"></div>
+          </div>
+        </div>
+        <div class="actions">
+          <button id="checkAlgo" class="btn primary">▶ Execute</button>
+          <button id="resetAlgo" class="btn">↻ Reset</button>
+        </div>
+        <div id="algoFeedback" class="feedback hidden"></div>
+        <div class="debug-grid">
+          <div class="codepanel"><div class="debug-head">CODE VIEW // PSEUDOCODE</div><div id="codeM1" class="codeview"></div></div>
+          <div class="tracepanel"><div class="debug-head">EXECUTION TRACE</div><div id="traceM1" class="trace">// Menunggu eksekusi...</div></div>
+        </div>
+      </section>
+
+      <section id="m2" class="mission hidden">
+        <span class="badge">NODE 02 • CONTROL STRUCTURE</span>
+        <h3>Mesin Percabangan Kelulusan</h3>
+        <p class="desc">Atur nilai batas kelulusan. Sistem kemudian memproses seluruh data menggunakan struktur JIKA–LAINNYA.</p>
+        <div class="two">
+          <div class="section">
+            <div class="section-title">Rule Engine</div>
+            <label class="small">Batas lulus</label>
+            <input id="limit" type="number" min="0" max="100" value="75" style="width:100%;margin-top:8px;padding:12px;border-radius:10px;border:1px solid #2c3e61;background:#07101c;color:white;font-size:1rem">
+            <button id="runBranch" class="btn primary" style="width:100%;margin-top:12px">Run Dataset</button>
+            <div class="codebox" style="margin-top:12px">JIKA nilai >= batas
+  TULIS "LULUS"
+LAINNYA
+  TULIS "BELUM LULUS"</div>
+          </div>
+          <div class="section">
+            <div class="section-title">Student Dataset</div>
+            <div id="students" style="display:grid;gap:8px"></div>
+          </div>
+        </div>
+        <div id="branchResult" class="feedback">Sistem belum dijalankan.</div>
+        <div class="debug-grid">
+          <div class="codepanel"><div class="debug-head">CODE VIEW // PSEUDOCODE</div><div id="codeM2" class="codeview"></div></div>
+          <div class="tracepanel"><div class="debug-head">EXECUTION TRACE</div><div id="traceM2" class="trace">// Menunggu dataset dijalankan...</div></div>
+        </div>
+      </section>
+
+      <section id="m3" class="mission hidden">
+        <span class="badge">NODE 03 • SORTING ARENA</span>
+        <h3>Urutkan Data Nilai</h3>
+        <p class="desc">Klik dua kartu untuk menukarnya. Tugas selesai jika data sudah tersusun dari nilai terkecil ke terbesar.</p>
+        <div class="section">
+          <div class="section-title">Data Buffer</div>
+          <div id="sortBoard" class="number-board"></div>
+          <div class="statline" style="margin-top:14px">
+            <span class="statpill">Swap: <b id="swapCount">0</b></span>
+            <span class="statpill">Target: Ascending</span>
+          </div>
+        </div>
+        <div class="actions">
+          <button id="checkSort" class="btn primary">Validate Order</button>
+          <button id="resetSort" class="btn">Randomize</button>
+        </div>
+        <div id="sortFeedback" class="feedback hidden"></div>
+        <div class="debug-grid">
+          <div class="codepanel"><div class="debug-head">CODE VIEW // SORTING LOGIC</div><div id="codeM3" class="codeview"></div></div>
+          <div class="tracepanel"><div class="debug-head">EXECUTION TRACE</div><div id="traceM3" class="trace">// Klik dua kartu untuk melakukan SWAP.</div></div>
+        </div>
+      </section>
+
+      <section id="m4" class="mission hidden">
+        <span class="badge">NODE 04 • SEARCH RACE</span>
+        <h3>Linear vs Binary Search</h3>
+        <p class="desc">Pilih algoritma pencarian lalu klik kartu sesuai aturan algoritma tersebut sampai target ditemukan.</p>
+        <div class="actions" style="margin-top:0">
+          <button id="linearMode" class="btn primary">Linear Search</button>
+          <button id="binaryMode" class="btn mag">Binary Search</button>
+          <button id="newSearch" class="btn">New Target</button>
+        </div>
+        <div class="section" style="margin-top:14px">
+          <div class="statline">
+            <span class="statpill">Mode: <b id="searchModeLabel">LINEAR</b></span>
+            <span class="statpill">Target: <b id="searchTarget"></b></span>
+            <span class="statpill">Steps: <b id="searchSteps">0</b></span>
+          </div>
+          <div id="searchBoard" class="search-board" style="margin-top:14px"></div>
+        </div>
+        <div id="searchFeedback" class="feedback">Pilih kartu pertama sesuai algoritma.</div>
+        <div class="debug-grid">
+          <div class="codepanel"><div class="debug-head">CODE VIEW // SEARCH ALGORITHM</div><div id="codeM4" class="codeview"></div></div>
+          <div class="tracepanel"><div class="debug-head">EXECUTION TRACE</div><div id="traceM4" class="trace">// Pilih mode pencarian...</div></div>
+        </div>
+      </section>
+
+      <section id="m5" class="mission hidden">
+        <span class="badge">NODE 05 • DATA STRUCTURE LAB</span>
+        <h3>Gudang Data: Stack & Queue</h3>
+        <p class="desc">Operasikan struktur data sampai mencapai kondisi target. Stack mengikuti LIFO, Queue mengikuti FIFO.</p>
+        <div class="two">
+          <div class="section">
+            <div class="section-title">Stack / LIFO</div>
+            <div class="small">Target akhir: <b>A, B, D</b></div>
+            <div id="stackBox" class="stack" style="margin-top:12px"></div>
+            <div class="actions"><button id="pushStack" class="btn">Push</button><button id="popStack" class="btn red">Pop</button></div>
+          </div>
+          <div class="section">
+            <div class="section-title">Queue / FIFO</div>
+            <div class="small">Target akhir: <b>B, C, D</b></div>
+            <div id="queueBox" class="queue" style="margin-top:12px"></div>
+            <div class="actions"><button id="enqueue" class="btn">Enqueue</button><button id="dequeue" class="btn red">Dequeue</button></div>
+          </div>
+        </div>
+        <div class="actions"><button id="checkData" class="btn primary">Validate Data Structure</button></div>
+        <div id="dataFeedback" class="feedback hidden"></div>
+        <div class="debug-grid">
+          <div class="codepanel"><div class="debug-head">CODE VIEW // DATA STRUCTURE</div><div id="codeM5" class="codeview"></div></div>
+          <div class="tracepanel"><div class="debug-head">EXECUTION TRACE</div><div id="traceM5" class="trace">// Operasikan Stack dan Queue.</div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <section id="finalCard" class="final hidden">
+    <div class="eyebrow">SYSTEM MESSAGE</div>
+    <h3>ALL MISSIONS CLEARED</h3>
+    <p id="finalText" class="subtitle" style="margin:auto"></p>
+    <div class="actions" style="justify-content:center"><button id="restart" class="btn primary">Restart Simulation</button></div>
+  </section>
+</div>
+
+<script>
+(()=>{
+let score=0,completed=new Set();
+const $=id=>document.getElementById(id);
+const debugCodes={
+ m1:['MULAI','AMBIL nomor_antrean','TUNGGU nomor dipanggil','PILIH makanan','BAYAR pesanan','AMBIL makanan','SELESAI'],
+ m2:['UNTUK setiap siswa','  BACA nilai','  JIKA nilai >= batas','    TULIS \"LULUS\"','  LAINNYA','    TULIS \"BELUM LULUS\"','SELESAI UNTUK'],
+ m3:['UNTUK i dari 0 sampai n-2','  UNTUK j dari 0 sampai n-i-2','    JIKA data[j] > data[j+1]','      SWAP data[j], data[j+1]','  SELESAI UNTUK','SELESAI UNTUK'],
+ linear:['UNTUK i dari 0 sampai n-1','  JIKA data[i] == target','    TULIS \"DITEMUKAN\"','    BERHENTI','SELESAI UNTUK'],
+ binary:['low <- 0','high <- n - 1','SELAMA low <= high','  mid <- (low + high) DIV 2','  JIKA data[mid] == target: SELESAI','  JIKA target < data[mid]: high <- mid-1','  LAINNYA: low <- mid+1'],
+ m5:['STACK: PUSH(x) -> tambah ke atas','STACK: POP() -> ambil paling atas','QUEUE: ENQUEUE(x) -> tambah ke belakang','QUEUE: DEQUEUE() -> ambil paling depan']
+};
+function renderCode(id, lines, active=-1){const box=$(id); if(!box)return; box.innerHTML=lines.map((x,i)=>`<span class=\"code-line ${i===active?'active':''}\" data-ln=\"${i+1}\">${x.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>`).join('')}
+function setTrace(id, rows){const box=$(id); if(!box)return; box.innerHTML=rows.map(r=>`<div class=\"trace-row ${r.cls||''}\">${r.text}</div>`).join(''); box.scrollTop=box.scrollHeight}
+function addTrace(id,text,cls=''){const box=$(id); if(!box)return; if(box.textContent.startsWith('//'))box.innerHTML=''; const d=document.createElement('div');d.className='trace-row '+cls;d.textContent=text;box.appendChild(d);box.scrollTop=box.scrollHeight}
+renderCode('codeM1',debugCodes.m1); renderCode('codeM2',debugCodes.m2); renderCode('codeM3',debugCodes.m3); renderCode('codeM4',debugCodes.linear); renderCode('codeM5',debugCodes.m5);
+function updateHUD(){
+  $('score').textContent=score;
+  $('missionStat').textContent=completed.size+'/5';
+  $('progress').style.width=(completed.size*20)+'%';
+  $('status').textContent=completed.size===5?'CLEARED':'ACTIVE';
+  $('rank').textContent=score>=100?'CYBER MASTER':score>=60?'LOGIC RUNNER':score>=20?'DATA SCOUT':'ROOKIE';
+}
+function finishMission(id){
+  if(completed.has(id))return;
+  completed.add(id);score+=20;updateHUD();
+  if(completed.size===5){$('finalCard').classList.remove('hidden');$('finalText').textContent='Skor akhir '+score+' poin. Seluruh misi Bab 2 berhasil dituntaskan.';}
+}
+document.querySelectorAll('.nav button').forEach(btn=>btn.addEventListener('click',()=>{
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  document.querySelectorAll('.mission').forEach(m=>m.classList.add('hidden'));$(btn.dataset.id).classList.remove('hidden');
+}));
+
+const algoCorrect=['Ambil nomor antrean','Tunggu sampai nomor dipanggil','Pilih makanan','Bayar pesanan','Ambil makanan'];let algoPicked=[];
+function renderAlgo(){
+  algoPicked=[];$('algoChoices').innerHTML='';$('algoTarget').innerHTML='';$('algoFeedback').classList.add('hidden');renderCode('codeM1',debugCodes.m1);setTrace('traceM1',[{text:'// Menunggu eksekusi...'}]);
+  [...algoCorrect].sort(()=>Math.random()-.5).forEach(step=>{
+    const b=document.createElement('button');b.className='choice';b.textContent=step;b.style.width='100%';b.style.marginBottom='8px';
+    b.onclick=()=>{if(b.disabled)return;b.disabled=true;b.classList.add('disabled');algoPicked.push(step);const d=document.createElement('div');d.className='step';d.textContent=algoPicked.length+'. '+step;$('algoTarget').appendChild(d);renderCode('codeM1',debugCodes.m1,algoPicked.length);addTrace('traceM1',`STEP ${algoPicked.length}: ${step}`)};
+    $('algoChoices').appendChild(b);
+  });
+}
+$('checkAlgo').onclick=()=>{const ok=JSON.stringify(algoPicked)===JSON.stringify(algoCorrect);$('algoFeedback').className='feedback '+(ok?'ok':'bad');$('algoFeedback').textContent=ok?'EXECUTION SUCCESS — urutan algoritma logis. +20':'EXECUTION ERROR — urutan belum logis.';renderCode('codeM1',debugCodes.m1,ok?6:Math.min(algoPicked.length,6));addTrace('traceM1',ok?'PROGRAM TERMINATED: SUCCESS':'PROGRAM HALTED: urutan instruksi salah',ok?'trace-ok':'trace-bad');if(ok)finishMission('m1')};
+$('resetAlgo').onclick=renderAlgo;renderAlgo();
+
+const stud=[['Alya',92],['Bima',68],['Citra',77],['Dani',55],['Eka',81]];
+$('students').innerHTML=stud.map(s=>`<div class="student"><span>${s[0]}</span><b>${s[1]}</b></div>`).join('');
+$('runBranch').onclick=()=>{
+  const lim=Math.max(0,Math.min(100,Number($('limit').value)||0));
+  $('branchResult').className='feedback ok';
+  $('branchResult').innerHTML=stud.map(s=>`${s[0]} → <b>${s[1]>=lim?'LULUS':'BELUM LULUS'}</b>`).join('<br>');
+  const rows=[{text:`batas = ${lim}`,cls:'trace-warn'}];
+  stud.forEach(s=>{const pass=s[1]>=lim;rows.push({text:`${s[0]}: nilai=${s[1]} → ${s[1]} >= ${lim} = ${pass}`,cls:pass?'trace-ok':'trace-bad'});rows.push({text:`OUTPUT → ${pass?'LULUS':'BELUM LULUS'}`})});
+  setTrace('traceM2',rows);renderCode('codeM2',debugCodes.m2,6);
+  finishMission('m2');
+};
+
+let nums=[],sel=null,swaps=0;
+function initSort(){nums=[78,45,91,66,82,55,73].sort(()=>Math.random()-.5);sel=null;swaps=0;$('swapCount').textContent=0;$('sortFeedback').classList.add('hidden');renderCode('codeM3',debugCodes.m3);setTrace('traceM3',[{text:'DATA = ['+nums.join(', ')+']'}]);drawSort()}
+function drawSort(){
+  $('sortBoard').innerHTML='';nums.forEach((n,i)=>{const b=document.createElement('button');b.className='num'+(sel===i?' selected':'');b.textContent=n;b.onclick=()=>{if(sel===null){sel=i;drawSort()}else if(sel===i){sel=null;drawSort()}else{const a=sel,b=i,v1=nums[a],v2=nums[b];[nums[a],nums[b]]=[nums[b],nums[a]];swaps++;$('swapCount').textContent=swaps;addTrace('traceM3',`SWAP index ${a} (${v1}) ↔ index ${b} (${v2})`,'trace-warn');addTrace('traceM3','DATA = ['+nums.join(', ')+']');renderCode('codeM3',debugCodes.m3,3);sel=null;drawSort()}};$('sortBoard').appendChild(b)});
+}
+$('checkSort').onclick=()=>{const ok=nums.every((n,i,a)=>i===0||a[i-1]<=n);$('sortFeedback').className='feedback '+(ok?'ok':'bad');$('sortFeedback').textContent=ok?`ORDER VALID — selesai dalam ${swaps} swap. +20`:'ORDER INVALID — data masih belum terurut.';if(ok)finishMission('m3')};
+$('resetSort').onclick=initSort;initSort();
+
+const searchData=[3,8,12,17,25,31,42,56,68,79,91];let target,mode='linear',steps=0,low=0,high=searchData.length-1,linearIndex=0,done=false;
+function initSearch(){target=searchData[Math.floor(Math.random()*searchData.length)];steps=0;low=0;high=searchData.length-1;linearIndex=0;done=false;$('searchTarget').textContent=target;$('searchSteps').textContent=0;$('searchFeedback').className='feedback';$('searchFeedback').textContent='Pilih kartu pertama sesuai algoritma.';renderCode('codeM4',mode==='linear'?debugCodes.linear:debugCodes.binary);setTrace('traceM4',[{text:`MODE=${mode.toUpperCase()} | TARGET=${target}`,cls:'trace-warn'}]);drawSearch()}
+function drawSearch(){
+  $('searchBoard').innerHTML='';searchData.forEach((n,i)=>{const b=document.createElement('button');b.className='search-card';if(mode==='binary'&&(i<low||i>high))b.classList.add('off');if(mode==='binary'&&i===Math.floor((low+high)/2))b.classList.add('mid');b.textContent=n;b.onclick=()=>searchClick(i);$('searchBoard').appendChild(b)});
+}
+function searchClick(i){
+  if(done)return;
+  let valid=true;
+  if(mode==='linear'){valid=i===linearIndex;if(valid)linearIndex++;}
+  else valid=i===Math.floor((low+high)/2);
+  if(!valid){$('searchFeedback').className='feedback bad';$('searchFeedback').textContent='INVALID STEP — langkah tidak sesuai algoritma.';addTrace('traceM4',`INVALID CLICK: index=${i}, value=${searchData[i]}`,'trace-bad');return;}
+  steps++;$('searchSteps').textContent=steps;addTrace('traceM4',`STEP ${steps}: index=${i}, value=${searchData[i]}`);renderCode('codeM4',mode==='linear'?debugCodes.linear:debugCodes.binary,mode==='linear'?1:3);
+  if(searchData[i]===target){done=true;$('searchFeedback').className='feedback ok';$('searchFeedback').textContent=`TARGET ACQUIRED — ditemukan dalam ${steps} langkah. +20`;addTrace('traceM4',`MATCH: ${searchData[i]} == ${target} → FOUND`,'trace-ok');finishMission('m4');return;}
+  if(mode==='binary'){if(target<searchData[i]){high=i-1;addTrace('traceM4',`target < data[mid] → high=${high}`,'trace-warn')}else{low=i+1;addTrace('traceM4',`target > data[mid] → low=${low}`,'trace-warn')}}else{addTrace('traceM4',`tidak cocok → lanjut index ${linearIndex}`,'trace-warn')}
+  $('searchFeedback').className='feedback';$('searchFeedback').textContent='Target belum ditemukan. Lanjutkan.';drawSearch();
+}
+$('linearMode').onclick=()=>{mode='linear';$('searchModeLabel').textContent='LINEAR';initSearch()};
+$('binaryMode').onclick=()=>{mode='binary';$('searchModeLabel').textContent='BINARY';initSearch()};
+$('newSearch').onclick=initSearch;initSearch();
+
+let stack=['A','B','C'],queue=['A','B','C'],nextCode=68;
+function nextToken(){const t=String.fromCharCode(nextCode);nextCode=Math.min(90,nextCode+1);return t}
+function drawDS(){$('stackBox').innerHTML=stack.map(x=>`<div class="token">${x}</div>`).join('');$('queueBox').innerHTML=queue.map(x=>`<div class="token">${x}</div>`).join('')}
+$('pushStack').onclick=()=>{const t=nextToken();stack.push(t);addTrace('traceM5',`STACK.PUSH(${t}) → [${stack.join(', ')}]`,'trace-ok');renderCode('codeM5',debugCodes.m5,0);drawDS()};$('popStack').onclick=()=>{if(stack.length){const t=stack.pop();addTrace('traceM5',`STACK.POP() → ${t}; stack=[${stack.join(', ')}]`,'trace-warn');renderCode('codeM5',debugCodes.m5,1)}drawDS()};$('enqueue').onclick=()=>{const t=nextToken();queue.push(t);addTrace('traceM5',`QUEUE.ENQUEUE(${t}) → [${queue.join(', ')}]`,'trace-ok');renderCode('codeM5',debugCodes.m5,2);drawDS()};$('dequeue').onclick=()=>{if(queue.length){const t=queue.shift();addTrace('traceM5',`QUEUE.DEQUEUE() → ${t}; queue=[${queue.join(', ')}]`,'trace-warn');renderCode('codeM5',debugCodes.m5,3)}drawDS()};
+$('checkData').onclick=()=>{const ok=stack.join(',')==='A,B,D'&&queue.join(',')==='B,C,D';$('dataFeedback').className='feedback '+(ok?'ok':'bad');$('dataFeedback').textContent=ok?'DATA STRUCTURE VALID — LIFO dan FIFO berhasil diterapkan. +20':'DATA STRUCTURE MISMATCH — kondisi akhir belum sesuai target.';addTrace('traceM5',`VALIDATE → stack=[${stack.join(', ')}], queue=[${queue.join(', ')}]`,ok?'trace-ok':'trace-bad');if(ok)finishMission('m5')};setTrace('traceM5',[{text:'INITIAL STACK = [A, B, C]'},{text:'INITIAL QUEUE = [A, B, C]'}]);drawDS();
+
+$('restart').onclick=()=>location.reload();updateHUD();
+})();
+</script>
+</body>
+</html>
