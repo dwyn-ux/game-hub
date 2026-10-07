@@ -7,9 +7,12 @@ $file=str_replace('\\','/',$file);
 if($file==='' || str_contains($file,'..') || str_starts_with($file,'/')){http_response_code(400);exit;}
 $s=db()->prepare('SELECT storage_dir,status FROM games WHERE slug=? LIMIT 1');$s->execute([$slug]);$g=$s->fetch();if(!$g || $g['status']!=='published'){http_response_code(404);exit;}
 $base=realpath(__DIR__.'/storage/games/'.$g['storage_dir']);
-$target=realpath($base.'/'.$file);
-if(!$base || !$target || !str_starts_with($target,$base.DIRECTORY_SEPARATOR) || !is_file($target)){
- error_log(sprintf('[game-hub] published game missing file: slug=%s storage_dir=%s file=%s base=%s target=%s is_file=%d', $slug, $g['storage_dir'], $file, $base, $target, is_file($target ?? '')));
+$target=$base!==false?realpath($base.'/'.$file):null;
+$exists=is_file($target??'');
+if($base===false){$base=__DIR__.'/storage/games/'.$g['storage_dir'];$target=$base.'/'.$file;$exists=is_file($target);}
+if(!$base||!$target||!str_starts_with($target,$base.DIRECTORY_SEPARATOR)||!$exists){
+ error_log(sprintf('[game-hub] published game missing file: slug=%s storage_dir=%s file=%s base=%s target=%s exists=%d', $slug, $g['storage_dir'], $file, $base, $target, $exists));
+ if(($_SESSION['teacher_id']??'')&&$base){http_response_code(404);exit('File game tidak tersimpan di disk: '.str_replace((string)cfg('base_url'), '', $target));}
  http_response_code(404);exit;}
 header("Content-Security-Policy: sandbox allow-scripts allow-pointer-lock; default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; font-src 'self' data:; connect-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'");
 header('X-Content-Type-Options: nosniff');

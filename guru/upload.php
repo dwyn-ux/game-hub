@@ -13,6 +13,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     if($ext==='html'||$ext==='htm'){
       if($_FILES['gamefile']['size']>cfg('upload.max_zip_bytes')) throw new RuntimeException('File terlalu besar.');
       if(!move_uploaded_file($tmp,$dest.'/index.html')) throw new RuntimeException('Gagal menyimpan file.');
+      if(!is_readable($dest.'/index.html')) throw new RuntimeException('File tersimpan tapi tidak bisa dibaca — periksa izin folder storage/games di hosting.');
     } elseif($ext==='zip'){
       if($_FILES['gamefile']['size']>cfg('upload.max_zip_bytes')) throw new RuntimeException('ZIP terlalu besar.');
       $zip=new ZipArchive(); if($zip->open($tmp)!==true) throw new RuntimeException('ZIP tidak valid.');
