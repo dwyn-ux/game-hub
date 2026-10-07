@@ -1,0 +1,2 @@
+<?php
+require __DIR__.'/../lib/auth_teacher.php';$u=require_teacher();if($_SERVER['REQUEST_METHOD']!=='POST')exit;verify_csrf();$id=(int)($_POST['id']??0);$s=db()->prepare('SELECT status FROM games WHERE id=? AND teacher_id=?');$s->execute([$id,$u['id']]);$g=$s->fetch();if($g){$next=$g['status']==='published'?'draft':'published';$up=db()->prepare('UPDATE games SET status=?,updated_at=? WHERE id=? AND teacher_id=?');$up->execute([$next,now_sql(),$id,$u['id']]);}redirect('/guru/dashboard.php');

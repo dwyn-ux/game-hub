@@ -1,0 +1,7 @@
+/vendor/
+/node_modules/
+*.log
+storage/
+config/config.php
+.htaccess
+.env
