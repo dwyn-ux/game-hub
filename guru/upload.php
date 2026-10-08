@@ -22,11 +22,17 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
       for($i=0;$i<$zip->numFiles;$i++){
         $st=$zip->statIndex($i);$name=safe_rel((string)$st['name']); if($name===null) throw new RuntimeException('Nama/path file tidak aman.');
         if(str_ends_with($name,'/')) continue;
-        $e=strtolower(pathinfo($name,PATHINFO_EXTENSION)); if(!in_array($e,$allowed,true)) throw new RuntimeException('Tipe file tidak diizinkan: '.$e);
+        $e=strtolower(pathinfo($name,PATHINFO_EXTENSION)); if($e!=='' && !in_array($e,$allowed,true)) throw new RuntimeException('Tipe file tidak diizinkan: '.$e);
         $total+=(int)($st['size']??0); if($total>cfg('upload.max_extracted_bytes')) throw new RuntimeException('Isi ZIP terlalu besar setelah diekstrak.');
       }
+      // ponytail: entry folder tanpa trailing slash tidak punya metadata dir di PHP build ini, jadi deteksi via path ancestor agar tidak di-extract jadi file kosong
+      $dirs=[];
       for($i=0;$i<$zip->numFiles;$i++){
         $st=$zip->statIndex($i);$name=safe_rel((string)$st['name']); if($name===null||str_ends_with($name,'/')) continue;
+        while($name!=='.'){ $name=dirname($name); if($name!=='.') $dirs[$name]=true; }
+      }
+      for($i=0;$i<$zip->numFiles;$i++){
+        $st=$zip->statIndex($i);$name=safe_rel((string)$st['name']); if($name===null||str_ends_with($name,'/')||isset($dirs[$name])) continue;
         $target=$dest.'/'.$name;$parent=dirname($target);if(!is_dir($parent))mkdir($parent,0750,true);
         $in=$zip->getStream($st['name']);$out=fopen($target,'wb');stream_copy_to_stream($in,$out);fclose($in);fclose($out);
       }
