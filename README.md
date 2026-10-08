@@ -45,6 +45,8 @@ game.zip
 ```
 `index.html` wajib berada di root ZIP.
 
+File server-side atau tipe lain yang tidak didukung (misalnya `.php`) akan diabaikan saat ekstraksi, sehingga tidak menggagalkan seluruh upload dan tidak dapat dieksekusi oleh server. Game tetap harus berjalan sebagai HTML/CSS/JavaScript statis.
+
 ## Troubleshooting 404 pada game yang sudah publish
 - Pastikan **mod_rewrite AKTIF** — game diakses lewat `/play/<slug>/index.html` (ditangani `.htaccess`), bukan file fisik.
 - Kalau game published & file ada di `storage/games/.../index.html` tapi tetap 404, cek **Error Log** hosting → cari baris `[game-hub] published game missing file: ...`. Ini kasih tau persis path-nya (`exists=0` = gak ketemu, atau `exists=1` = jalan tapi path diblokir).

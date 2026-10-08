@@ -8,7 +8,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
  if($title==='')$error='Judul wajib diisi.';
  elseif(empty($_FILES['gamefile'])||$_FILES['gamefile']['error']!==UPLOAD_ERR_OK)$error='Upload gagal.';
  else {
-  $tmp=$_FILES['gamefile']['tmp_name'];$orig=$_FILES['gamefile']['name'];$ext=strtolower(pathinfo($orig,PATHINFO_EXTENSION));$dir=bin2hex(random_bytes(16));$dest=__DIR__.'/../storage/games/'.$dir;mkdir($dest,0750,true);
+  $tmp=$_FILES['gamefile']['tmp_name'];$orig=$_FILES['gamefile']['name'];$ext=strtolower(pathinfo($orig,PATHINFO_EXTENSION));$dir=bin2hex(random_bytes(16));$dest=__DIR__.'/../storage/games/'.$dir;$skippedExtensions=[];mkdir($dest,0750,true);
   try{
     if($ext==='html'||$ext==='htm'){
       if($_FILES['gamefile']['size']>cfg('upload.max_zip_bytes')) throw new RuntimeException('File terlalu besar.');
@@ -18,28 +18,41 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
       if($_FILES['gamefile']['size']>cfg('upload.max_zip_bytes')) throw new RuntimeException('ZIP terlalu besar.');
       $zip=new ZipArchive(); if($zip->open($tmp)!==true) throw new RuntimeException('ZIP tidak valid.');
       if($zip->numFiles>cfg('upload.max_files')) throw new RuntimeException('Terlalu banyak file di dalam ZIP.');
-      $total=0;
+      $total=0;$filesToExtract=[];
       for($i=0;$i<$zip->numFiles;$i++){
         $st=$zip->statIndex($i);$name=safe_rel((string)$st['name']); if($name===null) throw new RuntimeException('Nama/path file tidak aman.');
         if(str_ends_with($name,'/')) continue;
-        $e=strtolower(pathinfo($name,PATHINFO_EXTENSION)); if($e!=='' && !in_array($e,$allowed,true)) throw new RuntimeException('Tipe file tidak diizinkan: '.$e);
+        $e=strtolower(pathinfo($name,PATHINFO_EXTENSION));
+        // Arsip dari project game kadang ikut membawa source server-side (mis. PHP).
+        // Jangan ekstrak file tersebut, tetapi jangan gagalkan asset statis yang valid.
+        if($e!=='' && !in_array($e,$allowed,true)){
+          $skippedExtensions[$e]=($skippedExtensions[$e]??0)+1;
+          continue;
+        }
         $total+=(int)($st['size']??0); if($total>cfg('upload.max_extracted_bytes')) throw new RuntimeException('Isi ZIP terlalu besar setelah diekstrak.');
+        $filesToExtract[]=['source'=>(string)$st['name'],'name'=>$name];
       }
       // ponytail: entry folder tanpa trailing slash tidak punya metadata dir di PHP build ini, jadi deteksi via path ancestor agar tidak di-extract jadi file kosong
       $dirs=[];
-      for($i=0;$i<$zip->numFiles;$i++){
-        $st=$zip->statIndex($i);$name=safe_rel((string)$st['name']); if($name===null||str_ends_with($name,'/')) continue;
+      foreach($filesToExtract as $entry){
+        $name=$entry['name'];
         while($name!=='.'){ $name=dirname($name); if($name!=='.') $dirs[$name]=true; }
       }
-      for($i=0;$i<$zip->numFiles;$i++){
-        $st=$zip->statIndex($i);$name=safe_rel((string)$st['name']); if($name===null||str_ends_with($name,'/')||isset($dirs[$name])) continue;
+      foreach($filesToExtract as $entry){
+        $name=$entry['name'];if(isset($dirs[$name])) continue;
         $target=$dest.'/'.$name;$parent=dirname($target);if(!is_dir($parent))mkdir($parent,0750,true);
-        $in=$zip->getStream($st['name']);$out=fopen($target,'wb');stream_copy_to_stream($in,$out);fclose($in);fclose($out);
+        $in=$zip->getStream($entry['source']);$out=fopen($target,'wb');stream_copy_to_stream($in,$out);fclose($in);fclose($out);
       }
       $zip->close();
       if(!is_file($dest.'/index.html')) throw new RuntimeException('ZIP wajib memiliki index.html di folder paling atas.');
     } else throw new RuntimeException('Hanya HTML tunggal atau ZIP yang diizinkan.');
-    $slug=slugify($title);$st=db()->prepare('INSERT INTO games(teacher_id,title,slug,subject,class_level,description,storage_dir,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?)');$st->execute([$u['id'],$title,$slug,$subject,$class,$desc,$dir,'draft',now_sql(),now_sql()]);redirect('/guru/dashboard.php?msg='.urlencode('Game berhasil diupload sebagai draft.'));
+    $slug=slugify($title);$st=db()->prepare('INSERT INTO games(teacher_id,title,slug,subject,class_level,description,storage_dir,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?)');$st->execute([$u['id'],$title,$slug,$subject,$class,$desc,$dir,'draft',now_sql(),now_sql()]);
+    $msg='Game berhasil diupload sebagai draft.';
+    if(!empty($skippedExtensions)){
+      $skippedCount=array_sum($skippedExtensions);$skippedTypes=implode(', ',array_map(fn($e)=>'.'.$e,array_keys($skippedExtensions)));
+      $msg.=' '.$skippedCount.' file yang tidak didukung diabaikan ('.$skippedTypes.').';
+    }
+    redirect('/guru/dashboard.php?msg='.urlencode($msg));
   } catch(Throwable $e){
     if(is_dir($dest)){ $it=new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dest,FilesystemIterator::SKIP_DOTS),RecursiveIteratorIterator::CHILD_FIRST);foreach($it as $f){$f->isDir()?rmdir($f->getPathname()):unlink($f->getPathname());} @rmdir($dest); }
     $error=$e->getMessage();
